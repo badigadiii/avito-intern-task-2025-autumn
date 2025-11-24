@@ -5,7 +5,7 @@ from sqlalchemy import ForeignKey, String, UUID
 from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.dialects.postgresql import ENUM as pgEnum
 
-from .base import Base
+from src.db.base import Base
 
 
 class PullRequestStatus(Enum):
