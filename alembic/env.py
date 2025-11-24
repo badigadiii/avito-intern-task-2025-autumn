@@ -1,7 +1,6 @@
 import asyncio
 from logging.config import fileConfig
 
-import src.models # after adding this finally
 from src.models import Base
 from src.config import settings
 
@@ -14,6 +13,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 DB_URL = settings.db_url
+
 
 def do_run_migrations(connection):
     context.configure(
