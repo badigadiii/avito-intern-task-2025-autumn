@@ -1,6 +1,7 @@
+import uuid
 from enum import Enum
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UUID
 from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.dialects.postgresql import ENUM as pgEnum
 
@@ -15,8 +16,10 @@ class PullRequestStatus(Enum):
 class PullRequests(Base):
     __tablename__ = "pull_requests"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    author_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
     pull_request_name: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[PullRequestStatus] = mapped_column(
         pgEnum(
