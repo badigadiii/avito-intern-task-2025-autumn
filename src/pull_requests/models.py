@@ -29,3 +29,14 @@ class PullRequests(Base):
         ),
         nullable=False,
     )
+
+
+class PullRequestsReviewers(Base):
+    __tablename__ = "pull_request_reviewers"
+
+    pull_request_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("pull_requests.id"), primary_key=True
+    )
+    reviewer_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id"), primary_key=True
+    )
