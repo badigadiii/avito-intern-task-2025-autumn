@@ -16,7 +16,7 @@ async def add_team(
 
 
 @router.get("/get", status_code=status.HTTP_200_OK)
-async def add_team(
+async def get_team_members(
     team: TeamQuery, teams_service: TeamsService = Depends(get_teams_service)
 ) -> TeamResponse:
     return await teams_service.get_team_members(team)
