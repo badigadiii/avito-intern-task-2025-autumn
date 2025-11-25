@@ -17,10 +17,34 @@ class PullRequestsRepository:
 
         return result.scalar_one_or_none()
 
+    async def get_reviewer(self, pull_request_id: str, reviewer_id: str) -> PullRequestsReviewers:
+        stmt = select(PullRequestsReviewers).where(
+            PullRequestsReviewers.pull_request_id == pull_request_id,
+            PullRequestsReviewers.reviewer_id == reviewer_id,
+        )
+        result = await self.db.execute(stmt)
+
+        return result.scalar_one_or_none()
+
+    async def get_reviewers_by_pull_request_id(self, pull_request_id: str) -> list[Users]:
+        stmt = (
+            select(Users)
+            .where(
+                Users.id.in_(
+                    select(PullRequestsReviewers.reviewer_id).where(
+                        PullRequestsReviewers.pull_request_id == pull_request_id,
+                    )
+                )
+            )
+        )
+        result = await self.db.execute(stmt)
+
+        return result.scalars().all()
+
     async def create_pull_request(
         self, pull_request_id: str, pull_request_name: str, author_id: str
     ) -> PullRequests | None:
-        if self.get_pull_request_by_id(pull_request_id):
+        if await self.get_pull_request_by_id(pull_request_id):
             raise PullRequestAlreadyExists(pull_request_id=pull_request_id)
 
         pr = PullRequests(

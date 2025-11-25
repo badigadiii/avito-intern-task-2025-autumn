@@ -25,7 +25,7 @@ async def reassign_pull_request(
     pr: PullRequestReassign,
     pr_service: PullRequestsService = Depends(get_pull_requests_service),
 ) -> PullRequestReassignResponse:
-    pass
+    return await pr_service.reassign_reviewers(pr)
 
 
 @router.post("/merge", response_model_exclude_none=True)

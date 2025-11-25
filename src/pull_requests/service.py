@@ -1,7 +1,10 @@
+import random
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from src import Users
 from src.db.db_helper import DbDep
 from src.pull_requests.exceptions import PullRequestAlreadyExists
 from src.pull_requests.repository import PullRequestsRepository
@@ -9,7 +12,7 @@ from src.pull_requests.schemas import (
     PullRequestCreate,
     PullRequestResponse,
     PullRequest,
-    PullRequestReassign, PullRequestShort,
+    PullRequestReassign, PullRequestShort, PullRequestReassignResponse, PullRequestStatus,
 )
 from src.schemas.enums import ErrorCode
 from src.teams.repository import TeamsRepository
@@ -102,6 +105,69 @@ class PullRequestsService:
             user_id=user_reviews_query.user_id,
             pull_requests=pull_requests
         )
+
+    async def reassign_reviewers(self, pr: PullRequestReassign) -> PullRequestReassignResponse:
+        old_reviewer = await self.repo.get_reviewer(pr.pull_request_id, pr.old_user_id)
+        pull_request = await self.repo.get_pull_request_by_id(pr.pull_request_id)
+
+        if not pull_request or not old_reviewer:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": {
+                        "code": ErrorCode.NOT_FOUND.name,
+                        "message": ErrorCode.NOT_FOUND.value,
+                    }
+                },
+            )
+
+        if pull_request.status == PullRequestStatus.MERGED:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "error": {
+                        "code": ErrorCode.PR_MERGED.name,
+                        "message": ErrorCode.PR_MERGED.value,
+                    }
+                },
+            )
+
+        old_reviewer_team = await self.teams_repo.get_team_by_user_id(pr.old_user_id)
+        potential_reviewers = await self.repo.get_team_members_to_assign_review(
+            old_reviewer_team.id,
+            old_reviewer.reviewer_id, pull_request.author_id
+        )
+
+        if potential_reviewers:
+            new_reviewer: Users = random.choice(potential_reviewers)
+            old_reviewer.reviewer_id = new_reviewer.id
+
+            await self.db.commit()
+
+            current_reviewers = await self.repo.get_reviewers_by_pull_request_id(pr.pull_request_id)
+            current_reviewers = [reviewer.id for reviewer in current_reviewers]
+
+            return PullRequestReassignResponse(
+                pr=PullRequest(
+                    pull_request_id=pull_request.id,
+                    pull_request_name=pull_request.pull_request_name,
+                    author_id=pull_request.author_id,
+                    status=pull_request.status,
+                    assigned_reviewers=current_reviewers
+                ),
+                replaced_by=old_reviewer.reviewer_id
+            )
+        else:
+            await self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": {
+                        "code": ErrorCode.NO_CANDIDATE.name,
+                        "message": ErrorCode.NO_CANDIDATE.value,
+                    }
+                },
+            )
 
 
 
