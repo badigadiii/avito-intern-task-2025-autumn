@@ -44,6 +44,10 @@ class PullRequestReassign(BaseModel):
 class PullRequestResponse(BaseModel):
     pr: PullRequest
 
+class PullRequestMergedResponse(BaseModel):
+    pr: PullRequest
+    mergedAt: datetime
+
 
 class PullRequestReassignResponse(BaseModel):
     pr: PullRequest

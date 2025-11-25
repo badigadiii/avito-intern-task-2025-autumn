@@ -6,6 +6,7 @@ from src.pull_requests.schemas import (
     PullRequestReassign,
     PullRequestResponse,
     PullRequestReassignResponse,
+    PullRequestMergedResponse,
 )
 from src.pull_requests.service import PullRequestsService, get_pull_requests_service
 
@@ -32,5 +33,5 @@ async def reassign_pull_request(
 async def merge_pull_request(
     pr: PullRequestMerge,
     pr_service: PullRequestsService = Depends(get_pull_requests_service),
-) -> PullRequestResponse:
-    pass
+) -> PullRequestMergedResponse:
+    return await pr_service.merge_pull_request(pr)

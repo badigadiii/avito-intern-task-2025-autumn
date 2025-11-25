@@ -1,8 +1,11 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import select, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import PullRequests, Users, PullRequestsReviewers
 from src.pull_requests.exceptions import PullRequestAlreadyExists
+from src.pull_requests.schemas import PullRequestStatus
 from src.teams.repository import TeamsRepository
 
 
@@ -88,3 +91,17 @@ class PullRequestsRepository:
         result = await self.db.execute(stmt)
 
         return result.scalars().all()
+
+    async def merge_pull_request(self, pull_request_id: str) -> PullRequests | None:
+        pr = await self.get_pull_request_by_id(pull_request_id)
+
+        if not pr:
+            return None
+
+        pr.status = PullRequestStatus.MERGED
+        pr.merged_at = datetime.now(timezone.utc)
+
+        await self.db.commit()
+        await self.db.refresh(pr)
+
+        return pr

@@ -12,7 +12,12 @@ from src.pull_requests.schemas import (
     PullRequestCreate,
     PullRequestResponse,
     PullRequest,
-    PullRequestReassign, PullRequestShort, PullRequestReassignResponse, PullRequestStatus,
+    PullRequestReassign,
+    PullRequestShort,
+    PullRequestReassignResponse,
+    PullRequestStatus,
+    PullRequestMerge,
+    PullRequestMergedResponse,
 )
 from src.schemas.enums import ErrorCode
 from src.teams.repository import TeamsRepository
@@ -169,6 +174,33 @@ class PullRequestsService:
                 },
             )
 
+    async def merge_pull_request(self, pr: PullRequestMerge) -> PullRequestMergedResponse:
+        pull_request = await self.repo.merge_pull_request(pr.pull_request_id)
+
+        if not pull_request:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": {
+                        "code": ErrorCode.NOT_FOUND.name,
+                        "message": ErrorCode.NOT_FOUND.value,
+                    }
+                },
+            )
+
+        current_reviewers = await self.repo.get_reviewers_by_pull_request_id(pr.pull_request_id)
+        current_reviewers = [reviewer.id for reviewer in current_reviewers]
+
+        return PullRequestMergedResponse(
+            pr=PullRequest(
+                pull_request_id=pull_request.id,
+                pull_request_name=pull_request.pull_request_name,
+                author_id=pull_request.author_id,
+                status=pull_request.status,
+                assigned_reviewers=current_reviewers
+            ),
+            mergedAt=pull_request.merged_at
+        )
 
 
 
