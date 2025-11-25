@@ -25,6 +25,17 @@ class TeamsService:
         self.users_repo = UsersRepository(db)
 
     async def create_team(self, team: TeamCreate) -> TeamResponse:
+        if len(team.members) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": {
+                        "code": ErrorCode.EMPTY_TEAM.name,
+                        "message": ErrorCode.EMPTY_TEAM.value,
+                    }
+                },
+            )
+
         existed_team = await self.repo.get_team_by_name(team.team_name)
 
         if existed_team:

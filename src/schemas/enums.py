@@ -8,6 +8,7 @@ class ErrorCode(str, Enum):
     NOT_ASSIGNED = "reviewer is not assigned to this PR"
     NO_CANDIDATE = "no active replacement candidate in team"
     NOT_FOUND = "resource not found"
+    EMPTY_TEAM = "no team members"
 
 
 class PRStatus(str, Enum):
