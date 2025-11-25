@@ -9,7 +9,7 @@ from src.db.base import Base
 class Users(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(
+    id: Mapped[str] = mapped_column(
         String,
         primary_key=True,
     )
