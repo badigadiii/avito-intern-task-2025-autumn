@@ -28,8 +28,12 @@ class UsersRepository:
         await self.db.refresh(user)
         return user
 
-    async def update_is_active(self, user_id: str, is_active: bool) -> Users:
+    async def update_is_active(self, user_id: str, is_active: bool) -> Users | None:
         user = await self.get_user(user_id)
+
+        if not user:
+            return None
+
         user.is_active = is_active
 
         await self.db.commit()
