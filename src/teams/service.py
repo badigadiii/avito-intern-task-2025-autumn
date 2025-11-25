@@ -6,6 +6,7 @@ from starlette import status
 
 from src.db.db_helper import DbDep
 from src.schemas.enums import ErrorCode
+from src.teams.exceptions import TeamMemberAlreadyHaveTeam
 from src.teams.repository import TeamsRepository
 from src.teams.schemas import (
     TeamResponse,
@@ -52,6 +53,15 @@ class TeamsService:
                     created_members.append(created_member)
 
             await self.db.commit()
+        except TeamMemberAlreadyHaveTeam as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": {
+                        "message": f"Can't create team, Exception: {e}",
+                    }
+                },
+            )
         except Exception as e:
             logging.error(f"Exception while creating team: {e}")
             await self.db.rollback()

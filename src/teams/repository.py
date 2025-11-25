@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.teams.exceptions import TeamMemberAlreadyHaveTeam
 from src.teams.models import Teams, TeamMembers
 from src.teams.schemas import TeamMemberCreate, TeamMember
 from src.users.models import Users
@@ -28,10 +29,19 @@ class TeamsRepository:
         team = Teams(name=name)
         self.db.add(team)
 
+    async def _user_already_have_team(self, user_id: str):
+        stmt = select(TeamMembers).where(TeamMembers.user_id == user_id)
+        result = await self.db.execute(stmt)
+
+        return bool(result.first())
+
     async def add_team_member(
         self, team_name: str, member: TeamMemberCreate
     ) -> TeamMember | None:
         team = await self.get_team_by_name(team_name)
+
+        if self._user_already_have_team(member.user_id):
+            raise TeamMemberAlreadyHaveTeam(member.user_id)
 
         if team:
             team_member = TeamMembers(user_id=member.user_id, team_id=team.id)
