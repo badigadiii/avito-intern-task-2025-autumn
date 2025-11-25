@@ -32,16 +32,16 @@ class TeamsRepository:
         self, team_name: str, member: TeamMemberCreate
     ) -> TeamMember | None:
         team = await self.get_team_by_name(team_name)
-        user = await self.users_repo.get_user(member.user_id)
 
-        if user:
+        if team:
             team_member = TeamMembers(user_id=member.user_id, team_id=team.id)
             self.db.add(team_member)
 
             return TeamMember(
-                user_id=str(user.id), username=user.username, is_active=user.is_active
+                user_id=member.user_id,
+                username=member.username,
+                is_active=member.is_active
             )
-
         return None
 
     async def get_team_members(self, team_name: str) -> list[Users]:

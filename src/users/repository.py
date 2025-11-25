@@ -16,7 +16,16 @@ class UsersRepository:
 
         return result.scalar_one_or_none()
 
-    async def create_user(self, username: str):
-        user = Users(username=username)
-        self.db.add(user)
+    async def create_update_user(self, user_id: str, username: str) -> Users:
+        result = await self.db.execute(select(Users).where(Users.id == user_id))
+        user = result.scalar_one_or_none()
+
+        if user:
+            user.username = username
+        else:
+            user = Users(id=user_id, username=username)
+            self.db.add(user)
+
         await self.db.commit()
+        await self.db.refresh(user)
+        return user
