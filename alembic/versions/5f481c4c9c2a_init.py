@@ -1,8 +1,8 @@
 """init
 
-Revision ID: a548479f544a
+Revision ID: 5f481c4c9c2a
 Revises:
-Create Date: 2025-11-25 14:45:23.244704
+Create Date: 2025-11-25 15:09:42.924754
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "a548479f544a"
+revision: str = "5f481c4c9c2a"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,17 +31,15 @@ def upgrade() -> None:
     )
     op.create_table(
         "users",
-        sa.Column(
-            "id", sa.UUID(), server_default=sa.text("gen_random_uuid()"), nullable=False
-        ),
+        sa.Column("id", sa.String(), nullable=False),
         sa.Column("username", sa.String(length=50), nullable=False),
         sa.Column("is_active", sa.Boolean(), server_default="true", nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "pull_requests",
-        sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("author_id", sa.UUID(), nullable=False),
+        sa.Column("id", sa.String(), nullable=False),
+        sa.Column("author_id", sa.String(), nullable=False),
         sa.Column("pull_request_name", sa.String(), nullable=False),
         sa.Column(
             "status",
@@ -53,7 +51,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "team_members",
-        sa.Column("user_id", sa.UUID(), nullable=False),
+        sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("team_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(["team_id"], ["teams.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
@@ -61,8 +59,8 @@ def upgrade() -> None:
     )
     op.create_table(
         "pull_request_reviewers",
-        sa.Column("pull_request_id", sa.UUID(), nullable=False),
-        sa.Column("reviewer_id", sa.UUID(), nullable=False),
+        sa.Column("pull_request_id", sa.String(), nullable=False),
+        sa.Column("reviewer_id", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
             ["pull_request_id"], ["pull_requests.id"], ondelete="CASCADE"
         ),

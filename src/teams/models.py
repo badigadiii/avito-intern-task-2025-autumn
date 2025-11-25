@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped
 
@@ -16,7 +14,7 @@ class Teams(Base):
 class TeamMembers(Base):
     __tablename__ = "team_members"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
+    user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
     team_id: Mapped[int] = mapped_column(
