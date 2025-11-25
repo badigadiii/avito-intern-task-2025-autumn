@@ -19,7 +19,7 @@ class PullRequests(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    author_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    author_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     pull_request_name: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[PullRequestStatus] = mapped_column(
         pgEnum(
@@ -35,8 +35,8 @@ class PullRequestsReviewers(Base):
     __tablename__ = "pull_request_reviewers"
 
     pull_request_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("pull_requests.id"), primary_key=True
+        ForeignKey("pull_requests.id", ondelete="CASCADE"), primary_key=True
     )
     reviewer_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id"), primary_key=True
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )

@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 8fb6f27397b1
+Revision ID: a548479f544a
 Revises:
-Create Date: 2025-11-25 00:54:57.814633
+Create Date: 2025-11-25 14:45:23.244704
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "8fb6f27397b1"
+revision: str = "a548479f544a"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,9 +31,11 @@ def upgrade() -> None:
     )
     op.create_table(
         "users",
-        sa.Column("id", sa.UUID(), nullable=False),
+        sa.Column(
+            "id", sa.UUID(), server_default=sa.text("gen_random_uuid()"), nullable=False
+        ),
         sa.Column("username", sa.String(length=50), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("is_active", sa.Boolean(), server_default="true", nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -46,24 +48,15 @@ def upgrade() -> None:
             postgresql.ENUM("open", "merged", name="pull_request_status_enum"),
             nullable=False,
         ),
-        sa.ForeignKeyConstraint(
-            ["author_id"],
-            ["users.id"],
-        ),
+        sa.ForeignKeyConstraint(["author_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "team_members",
         sa.Column("user_id", sa.UUID(), nullable=False),
         sa.Column("team_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["team_id"],
-            ["teams.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.id"],
-        ),
+        sa.ForeignKeyConstraint(["team_id"], ["teams.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("user_id", "team_id"),
     )
     op.create_table(
@@ -71,13 +64,9 @@ def upgrade() -> None:
         sa.Column("pull_request_id", sa.UUID(), nullable=False),
         sa.Column("reviewer_id", sa.UUID(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["pull_request_id"],
-            ["pull_requests.id"],
+            ["pull_request_id"], ["pull_requests.id"], ondelete="CASCADE"
         ),
-        sa.ForeignKeyConstraint(
-            ["reviewer_id"],
-            ["users.id"],
-        ),
+        sa.ForeignKeyConstraint(["reviewer_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("pull_request_id", "reviewer_id"),
     )
     # ### end Alembic commands ###
