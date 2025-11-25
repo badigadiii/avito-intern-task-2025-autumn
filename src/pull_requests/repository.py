@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import PullRequests, Users, PullRequestsReviewers
@@ -11,16 +11,16 @@ class PullRequestsRepository:
         self.db = db
         self.teams_repo = TeamsRepository(db)
 
-    async def _is_pr_already_exists(self, pull_request_id: str) -> bool:
+    async def get_pull_request_by_id(self, pull_request_id: str) -> PullRequests | None:
         stmt = select(PullRequests).where(PullRequests.id == pull_request_id)
         result = await self.db.execute(stmt)
 
-        return bool(result.scalar_one_or_none())
+        return result.scalar_one_or_none()
 
     async def create_pull_request(
         self, pull_request_id: str, pull_request_name: str, author_id: str
     ) -> PullRequests | None:
-        if self._is_pr_already_exists(pull_request_id):
+        if self.get_pull_request_by_id(pull_request_id):
             raise PullRequestAlreadyExists(pull_request_id=pull_request_id)
 
         pr = PullRequests(
@@ -52,3 +52,15 @@ class PullRequestsRepository:
                 reviewer_id=reviewer.id, pull_request_id=pull_request_id
             )
             self.db.add(pr_reviewer)
+
+    async def get_user_reviews(self, user_id: str) -> list[PullRequests]:
+        stmt = (
+            select(PullRequests)
+            .where(PullRequests.id.in_(
+                select(PullRequestsReviewers.pull_request_id)
+                .where(PullRequestsReviewers.reviewer_id == user_id)
+            ))
+        )
+        result = await self.db.execute(stmt)
+
+        return result.scalars().all()

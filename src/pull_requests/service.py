@@ -9,9 +9,11 @@ from src.pull_requests.schemas import (
     PullRequestCreate,
     PullRequestResponse,
     PullRequest,
+    PullRequestReassign, PullRequestShort,
 )
 from src.schemas.enums import ErrorCode
 from src.teams.repository import TeamsRepository
+from src.users.schemas import UserReviewsResponse, UserReviewsQuery
 
 
 class PullRequestsService:
@@ -84,6 +86,24 @@ class PullRequestsService:
                 }
             },
         )
+
+    async def get_pull_request_reviews(self, user_reviews_query: UserReviewsQuery) -> UserReviewsResponse:
+        reviews = await self.repo.get_user_reviews(user_reviews_query.user_id)
+        pull_requests = [
+            PullRequestShort(
+                pull_request_id=pr.id,
+                pull_request_name=pr.pull_request_name,
+                author_id=pr.author_id,
+                status=pr.status
+            )
+            for pr in reviews
+        ]
+        return UserReviewsResponse(
+            user_id=user_reviews_query.user_id,
+            pull_requests=pull_requests
+        )
+
+
 
 
 def get_pull_requests_service(db: DbDep):

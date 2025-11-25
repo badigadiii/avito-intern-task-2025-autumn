@@ -19,6 +19,9 @@ class UserResponse(User):
     pass
 
 
+class UserReviewsQuery(BaseModel):
+    user_id: str
+
 class UserReviewsResponse(BaseModel):
     user_id: str
     pull_requests: list[PullRequestShort]
