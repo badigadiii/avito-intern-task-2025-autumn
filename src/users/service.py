@@ -18,7 +18,9 @@ class UsersService:
         self.teams_repo = TeamsRepository(db)
 
     async def set_is_active(self, user: UserSetIsActiveSchema):
-        user = await self.users_repo.update_is_active(user_id=user.user_id, is_active=user.is_active)
+        user = await self.users_repo.update_is_active(
+            user_id=user.user_id, is_active=user.is_active
+        )
 
         if not user:
             raise HTTPException(
@@ -38,7 +40,7 @@ class UsersService:
             user_id=user.id,
             username=user.username,
             is_active=user.is_active,
-            team_name=team_name
+            team_name=team_name,
         )
 
     async def get_reviews(self):

@@ -7,9 +7,11 @@ class User(BaseModel):
     team_name: str | None
     is_active: bool
 
+
 class UserSetIsActiveSchema(BaseModel):
     user_id: str
     is_active: bool
+
 
 class UserResponse(User):
     pass

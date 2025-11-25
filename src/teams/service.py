@@ -11,12 +11,11 @@ from src.teams.repository import TeamsRepository
 from src.teams.schemas import (
     TeamResponse,
     TeamCreate,
-    TeamMemberBase,
     TeamQuery,
     TeamMember,
-    TeamMemberCreate,
 )
 from src.users.repository import UsersRepository
+
 
 class TeamsService:
     def __init__(self, db: AsyncSession):
@@ -48,7 +47,6 @@ class TeamsService:
                     }
                 },
             )
-
 
         created_members: list[TeamMember] = []
 

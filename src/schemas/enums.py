@@ -9,8 +9,3 @@ class ErrorCode(str, Enum):
     NO_CANDIDATE = "no active replacement candidate in team"
     NOT_FOUND = "resource not found"
     EMPTY_TEAM = "no team members"
-
-
-class PRStatus(str, Enum):
-    OPEN = "open"
-    MERGED = "merged"

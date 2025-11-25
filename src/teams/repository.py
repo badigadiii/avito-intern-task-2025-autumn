@@ -24,13 +24,9 @@ class TeamsRepository:
         return result.scalar_one_or_none()
 
     async def get_team_by_user_id(self, user_id: str) -> Teams | None:
-        stmt = (
-            select(Teams)
-            .where(
-                Teams.id.in_(
-                    select(TeamMembers.team_id)
-                    .where(TeamMembers.user_id == user_id)
-                )
+        stmt = select(Teams).where(
+            Teams.id.in_(
+                select(TeamMembers.team_id).where(TeamMembers.user_id == user_id)
             )
         )
         result = await self.db.execute(stmt)
@@ -62,7 +58,7 @@ class TeamsRepository:
             return TeamMember(
                 user_id=member.user_id,
                 username=member.username,
-                is_active=member.is_active
+                is_active=member.is_active,
             )
         return None
 
