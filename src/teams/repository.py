@@ -5,13 +5,11 @@ from src.teams.exceptions import TeamMemberAlreadyHaveTeam
 from src.teams.models import Teams, TeamMembers
 from src.teams.schemas import TeamMemberCreate, TeamMember
 from src.users.models import Users
-from src.users.repository import UsersRepository
 
 
 class TeamsRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.users_repo = UsersRepository(db)
 
     async def get_team_by_id(self, id: int) -> Teams | None:
         stmt = select(Teams).where(Teams.id == id)
@@ -21,6 +19,20 @@ class TeamsRepository:
 
     async def get_team_by_name(self, name: str) -> Teams | None:
         stmt = select(Teams).where(Teams.name == name)
+        result = await self.db.execute(stmt)
+
+        return result.scalar_one_or_none()
+
+    async def get_team_by_user_id(self, user_id: str) -> Teams | None:
+        stmt = (
+            select(Teams)
+            .where(
+                Teams.id.in_(
+                    select(TeamMembers.team_id)
+                    .where(TeamMembers.user_id == user_id)
+                )
+            )
+        )
         result = await self.db.execute(stmt)
 
         return result.scalar_one_or_none()

@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +8,7 @@ class UsersRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_user(self, id: uuid.UUID) -> Users | None:
+    async def get_user(self, id: str) -> Users | None:
         stmt = select(Users).where(Users.id == id)
         result = await self.db.execute(stmt)
 
@@ -25,6 +23,14 @@ class UsersRepository:
         else:
             user = Users(id=user_id, username=username)
             self.db.add(user)
+
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user
+
+    async def update_is_active(self, user_id: str, is_active: bool) -> Users:
+        user = await self.get_user(user_id)
+        user.is_active = is_active
 
         await self.db.commit()
         await self.db.refresh(user)
