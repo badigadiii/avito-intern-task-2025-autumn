@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from src.pull_requests.schemas import PullRequestShort
+
 
 class User(BaseModel):
     user_id: str
@@ -15,3 +17,8 @@ class UserSetIsActiveSchema(BaseModel):
 
 class UserResponse(User):
     pass
+
+
+class UserReviewsResponse(BaseModel):
+    user_id: str
+    pull_requests: list[PullRequestShort]

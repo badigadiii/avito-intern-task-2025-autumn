@@ -1,15 +1,11 @@
-from enum import Enum
+from datetime import datetime
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, DateTime, func
 from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.dialects.postgresql import ENUM as pgEnum
 
 from src.db.base import Base
-
-
-class PullRequestStatus(Enum):
-    OPEN = "open"
-    MERGED = "merged"
+from .schemas import PullRequestStatus
 
 
 class PullRequests(Base):
@@ -24,7 +20,14 @@ class PullRequests(Base):
             name="pull_request_status_enum",
             values_callable=lambda obj: [e.value for e in obj],
         ),
+        server_default=PullRequestStatus.OPEN.value,
         nullable=False,
+    )
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, server_default=func.now()
+    )
+    merged_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
 
 

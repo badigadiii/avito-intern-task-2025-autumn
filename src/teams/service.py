@@ -63,6 +63,7 @@ class TeamsService:
 
             await self.db.commit()
         except TeamMemberAlreadyHaveTeam as e:
+            await self.db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
@@ -74,7 +75,6 @@ class TeamsService:
         except Exception as e:
             logging.error(f"Exception while creating team: {e}")
             await self.db.rollback()
-
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={

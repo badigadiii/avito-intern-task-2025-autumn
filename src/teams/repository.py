@@ -17,8 +17,8 @@ class TeamsRepository:
 
         return result.scalar_one_or_none()
 
-    async def get_team_by_name(self, name: str) -> Teams | None:
-        stmt = select(Teams).where(Teams.name == name)
+    async def get_team_by_name(self, team_name: str) -> Teams | None:
+        stmt = select(Teams).where(Teams.name == team_name)
         result = await self.db.execute(stmt)
 
         return result.scalar_one_or_none()
@@ -48,7 +48,7 @@ class TeamsRepository:
     ) -> TeamMember | None:
         team = await self.get_team_by_name(team_name)
 
-        if self._user_already_have_team(member.user_id):
+        if await self._user_already_have_team(member.user_id):
             raise TeamMemberAlreadyHaveTeam(member.user_id)
 
         if team:
@@ -64,6 +64,18 @@ class TeamsRepository:
 
     async def get_team_members(self, team_name: str) -> list[Users]:
         team = await self.get_team_by_name(team_name)
+
+        stmt = (
+            select(Users)
+            .join(TeamMembers, TeamMembers.user_id == Users.id)
+            .where(TeamMembers.team_id == team.id)
+        )
+        result = await self.db.execute(stmt)
+
+        return result.scalars().all()
+
+    async def get_team_members_by_team_id(self, team_id: int) -> list[Users]:
+        team = await self.get_team_by_id(team_id)
 
         stmt = (
             select(Users)
